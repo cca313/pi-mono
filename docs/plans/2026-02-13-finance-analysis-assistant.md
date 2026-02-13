@@ -8,6 +8,14 @@
 
 **Tech Stack:** TypeScript, Vitest, TypeBox, existing pi monorepo workspaces (`coding-agent`, `web-ui`, `agent-core`).
 
+## Isolation Update (Approved)
+
+- `finance-assistant` and `coding-agent` are separate agents.
+- Finance logic must not be wired into `packages/coding-agent` defaults.
+- Finance logic must not be wired into `packages/web-ui/example` defaults.
+- Shared code reuse is allowed through `@mariozechner/pi-agent-core` and `@mariozechner/pi-ai` only.
+- Finance defaults (including DeepSeek default model) are defined in finance-only entry points.
+
 ---
 
 ### Task 1: Create core package skeleton

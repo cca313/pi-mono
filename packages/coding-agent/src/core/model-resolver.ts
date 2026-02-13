@@ -12,6 +12,8 @@ import type { ModelRegistry } from "./model-registry.js";
 
 /** Default model IDs for each known provider */
 export const defaultModelPerProvider: Record<KnownProvider, string> = {
+	deepseek: "deepseek-chat",
+	moonshot: "kimi-k2.5",
 	"amazon-bedrock": "us.anthropic.claude-opus-4-6-v1",
 	anthropic: "claude-opus-4-6",
 	openai: "gpt-5.1-codex",
@@ -32,8 +34,6 @@ export const defaultModelPerProvider: Record<KnownProvider, string> = {
 	minimax: "MiniMax-M2.1",
 	"minimax-cn": "MiniMax-M2.1",
 	huggingface: "moonshotai/Kimi-K2.5",
-	deepseek: "deepseek-chat",
-	moonshot: "kimi-k2.5",
 	opencode: "claude-opus-4-6",
 	"kimi-coding": "kimi-k2-thinking",
 };
@@ -321,7 +321,12 @@ export function resolveCliModel(options: {
 			(m) => m.id.toLowerCase() === lower || `${m.provider}/${m.id}`.toLowerCase() === lower,
 		);
 		if (exact) {
-			return { model: exact, warning: undefined, thinkingLevel: undefined, error: undefined };
+			return {
+				model: exact,
+				warning: undefined,
+				thinkingLevel: undefined,
+				error: undefined,
+			};
 		}
 	}
 
@@ -409,7 +414,11 @@ export async function findInitialModel(options: {
 			console.error(chalk.red(`Model ${cliProvider}/${cliModel} not found`));
 			process.exit(1);
 		}
-		return { model: found, thinkingLevel: DEFAULT_THINKING_LEVEL, fallbackMessage: undefined };
+		return {
+			model: found,
+			thinkingLevel: DEFAULT_THINKING_LEVEL,
+			fallbackMessage: undefined,
+		};
 	}
 
 	// 2. Use first model from scoped models (skip if continuing/resuming)
@@ -442,16 +451,28 @@ export async function findInitialModel(options: {
 			const defaultId = defaultModelPerProvider[provider];
 			const match = availableModels.find((m) => m.provider === provider && m.id === defaultId);
 			if (match) {
-				return { model: match, thinkingLevel: DEFAULT_THINKING_LEVEL, fallbackMessage: undefined };
+				return {
+					model: match,
+					thinkingLevel: DEFAULT_THINKING_LEVEL,
+					fallbackMessage: undefined,
+				};
 			}
 		}
 
 		// If no default found, use first available
-		return { model: availableModels[0], thinkingLevel: DEFAULT_THINKING_LEVEL, fallbackMessage: undefined };
+		return {
+			model: availableModels[0],
+			thinkingLevel: DEFAULT_THINKING_LEVEL,
+			fallbackMessage: undefined,
+		};
 	}
 
 	// 5. No model found
-	return { model: undefined, thinkingLevel: DEFAULT_THINKING_LEVEL, fallbackMessage: undefined };
+	return {
+		model: undefined,
+		thinkingLevel: DEFAULT_THINKING_LEVEL,
+		fallbackMessage: undefined,
+	};
 }
 
 /**
@@ -463,7 +484,10 @@ export async function restoreModelFromSession(
 	currentModel: Model<Api> | undefined,
 	shouldPrintMessages: boolean,
 	modelRegistry: ModelRegistry,
-): Promise<{ model: Model<Api> | undefined; fallbackMessage: string | undefined }> {
+): Promise<{
+	model: Model<Api> | undefined;
+	fallbackMessage: string | undefined;
+}> {
 	const restoredModel = modelRegistry.find(savedProvider, savedModelId);
 
 	// Check if restored model exists and has a valid API key

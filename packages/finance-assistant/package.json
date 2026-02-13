@@ -1,6 +1,6 @@
 {
 	"name": "@mariozechner/pi-finance-assistant",
-	"version": "0.52.9",
+	"version": "0.52.10",
 	"description": "Shared finance analysis core for pi web and cli",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -10,13 +10,20 @@
 		"clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
 		"build": "tsgo -p tsconfig.build.json",
 		"dev": "tsgo -p tsconfig.build.json --watch --preserveWatchOutput",
+		"example:cli": "tsx examples/cli-finance.ts",
 		"test": "vitest --run",
 		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"dependencies": {
+		"@mariozechner/pi-agent-core": "^0.52.10",
+		"@mariozechner/pi-ai": "^0.52.10",
+		"@sinclair/typebox": "^0.34.41"
 	},
 	"devDependencies": {
 		"@types/node": "^24.3.0",
 		"typescript": "^5.7.3",
-		"vitest": "^3.2.4"
+		"vitest": "^3.2.4",
+		"tsx": "^4.20.3"
 	},
 	"engines": {
 		"node": ">=20.0.0"
