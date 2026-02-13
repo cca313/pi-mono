@@ -341,7 +341,12 @@ pi install npm:@foo/pi-tools
 pi install npm:@foo/pi-tools@1.2.3      # pinned version
 pi install git:github.com/user/repo
 pi install git:github.com/user/repo@v1  # tag or commit
+pi install git:git@github.com:user/repo
+pi install git:git@github.com:user/repo@v1  # tag or commit
 pi install https://github.com/user/repo
+pi install https://github.com/user/repo@v1      # tag or commit
+pi install ssh://git@github.com/user/repo
+pi install ssh://git@github.com/user/repo@v1    # tag or commit
 pi remove npm:@foo/pi-tools
 pi list
 pi update                               # skips pinned packages
@@ -452,7 +457,7 @@ pi config                   # Enable/disable package resources
 | Option | Description |
 |--------|-------------|
 | `--provider <name>` | Provider (anthropic, openai, google, etc.) |
-| `--model <id>` | Model ID |
+| `--model <pattern>` | Model pattern or ID (supports `provider/id` and optional `:<thinking>`) |
 | `--api-key <key>` | API key (overrides env vars) |
 | `--thinking <level>` | `off`, `minimal`, `low`, `medium`, `high`, `xhigh` |
 | `--models <patterns>` | Comma-separated patterns for Ctrl+P cycling |
@@ -523,6 +528,12 @@ pi -p "Summarize this codebase"
 
 # Different model
 pi --provider openai --model gpt-4o "Help me refactor"
+
+# Model with provider prefix (no --provider needed)
+pi --model openai/gpt-4o "Help me refactor"
+
+# Model with thinking level shorthand
+pi --model sonnet:high "Solve this complex problem"
 
 # Limit model cycling
 pi --models "claude-*,gpt-4o"
