@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.52.12] - 2026-02-13
+
+### Added
+
+- Added `transport` setting (`"sse"`, `"websocket"`, `"auto"`) to `/settings` and `settings.json` for providers that support multiple transports (currently `openai-codex` via OpenAI Codex Responses).
+
+### Changed
+
+- Interactive mode now applies transport changes immediately to the active agent session.
+- Settings migration now maps legacy `websockets: boolean` to the new `transport` setting.
+
+## [0.52.11] - 2026-02-13
+
+### Added
+
+- Added MiniMax M2.5 model entries for `minimax`, `minimax-cn`, `openrouter`, and `vercel-ai-gateway` providers, plus `minimax-m2.5-free` for `opencode`.
+
 ## [0.52.10] - 2026-02-12
 
 ### New Features

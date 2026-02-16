@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## [0.52.12] - 2026-02-13
+
+### Added
+
+- Added `transport` to `StreamOptions` with values `"sse"`, `"websocket"`, and `"auto"` (currently supported by `openai-codex-responses`).
+- Added WebSocket transport support for OpenAI Codex Responses (`openai-codex-responses`).
+
+### Changed
+
+- OpenAI Codex Responses now defaults to SSE transport unless `transport` is explicitly set.
+- OpenAI Codex Responses WebSocket connections are cached per `sessionId` and expire after 5 minutes of inactivity.
+
+## [0.52.11] - 2026-02-13
+
+### Added
+
+- Added MiniMax M2.5 model entries for `minimax`, `minimax-cn`, `openrouter`, and `vercel-ai-gateway` providers, plus `minimax-m2.5-free` for `opencode`.
+
 ## [0.52.10] - 2026-02-12
 
 ### Added
