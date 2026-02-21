@@ -5,7 +5,10 @@
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"files": ["dist", "README.md"],
+	"files": ["dist", "skills", "README.md"],
+	"pi": {
+		"skills": ["./skills"]
+	},
 	"scripts": {
 		"clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
 		"build": "tsgo -p tsconfig.build.json",

@@ -2,7 +2,8 @@ import { createFinanceAgent, YahooProvider } from "../src/index.js";
 
 const prompt =
 	process.argv.slice(2).join(" ") ||
-	"Use finance_analyze to analyze AAPL on 1D timeframe. Return conclusion, key evidence, and risk points.";
+	"Analyze AAPL on 1D. Use finance_fetch_market_data, then finance_compute_indicators, then " +
+	"finance_generate_report. Return conclusion, key evidence, risk points, warnings, and confidence.";
 
 const agent = createFinanceAgent({
 	providers: [new YahooProvider()],
