@@ -80,11 +80,15 @@ Run tests:
 npm run test -w @mariozechner/pi-finance-assistant
 ```
 
-Run isolated CLI demo (Yahoo default, optional API-key providers via env):
+Run isolated CLI demo (default provider chain: `FINNHUB_API_KEY` -> `yahoo` -> `ALPHA_VANTAGE_API_KEY`):
 
 ```bash
 npm run example:cli -w @mariozechner/pi-finance-assistant -- "Analyze AAPL on 1D and list risks"
 ```
+
+Troubleshooting:
+
+- If you see `PROVIDERS_FAILED`, check network access and whether `FINNHUB_API_KEY` / `ALPHA_VANTAGE_API_KEY` are configured correctly.
 
 Run isolated web demo:
 
