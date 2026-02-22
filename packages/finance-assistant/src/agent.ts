@@ -1,6 +1,6 @@
 import { Agent, type ThinkingLevel } from "@mariozechner/pi-agent-core";
 import { type Api, getModel, getModels, getProviders, type KnownProvider, type Model } from "@mariozechner/pi-ai";
-import type { QuoteProvider } from "./providers/types.js";
+import type { FinanceDataProvider } from "./providers/types.js";
 import { createFinanceToolset } from "./tools/index.js";
 import type { Timeframe } from "./types.js";
 
@@ -39,10 +39,11 @@ export interface CreateFinanceAgentOptions {
 	model?: Model<Api>;
 	thinkingLevel?: ThinkingLevel;
 	systemPrompt?: string;
-	providers?: QuoteProvider[];
+	providers?: FinanceDataProvider[];
 	defaultTimeframe?: Timeframe;
 	defaultLimit?: number;
 	maxCachedWorkflows?: number;
+	maxCachedAdvisoryArtifacts?: number;
 }
 
 export function createFinanceAgent(options?: CreateFinanceAgentOptions): Agent {
@@ -52,16 +53,23 @@ export function createFinanceAgent(options?: CreateFinanceAgentOptions): Agent {
 		defaultTimeframe: options?.defaultTimeframe,
 		defaultLimit: options?.defaultLimit,
 		maxCachedWorkflows: options?.maxCachedWorkflows,
+		maxCachedAdvisoryArtifacts: options?.maxCachedAdvisoryArtifacts,
 	});
 
 	return new Agent({
 		initialState: {
 			systemPrompt:
 				options?.systemPrompt ??
-				"You are a financial analysis assistant. Prefer the finance-analysis skill workflow. " +
-					"If the skill is unavailable, call tools in this order: " +
-					"finance_fetch_market_data -> finance_compute_indicators -> finance_generate_report. " +
-					"Always include key risks and uncertainty in every answer.",
+				"You are a financial analysis and investment advisory assistant. " +
+					"Prefer these skills by request type: finance-analysis (technical analysis), " +
+					"finance-investment-advisor (single-symbol advisory), finance-portfolio-advisor (portfolio review). " +
+					"If skills are unavailable, use tool chains in order. " +
+					"Analysis chain: finance_fetch_market_data -> finance_compute_indicators -> finance_generate_report. " +
+					"Single-symbol advisory chain extends analysis with: finance_fetch_fundamentals -> " +
+					"finance_capture_investor_profile -> finance_assess_investment_suitability -> finance_plan_position_strategy. " +
+					"Portfolio advisory chain: finance_capture_investor_profile -> finance_capture_portfolio_snapshot -> " +
+					"finance_review_portfolio -> finance_run_portfolio_stress_test -> finance_generate_rebalance_plan. " +
+					"Always include key risks, uncertainty, coverage level, and a not-investment-advice disclaimer.",
 			model,
 			thinkingLevel: options?.thinkingLevel ?? "off",
 			tools,

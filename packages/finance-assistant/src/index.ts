@@ -1,3 +1,4 @@
+export * from "./advisory/index.js";
 export * from "./agent.js";
 export * from "./errors.js";
 export * from "./indicators/index.js";
@@ -8,4 +9,6 @@ export * from "./tools/index.js";
 export * from "./types.js";
 export * from "./workflow/compute-finance-indicators.js";
 export * from "./workflow/run-finance-workflow.js";
+export * from "./workflow/run-investment-advisor-workflow.js";
+export * from "./workflow/run-portfolio-advisor-workflow.js";
 export * from "./workflow/types.js";

@@ -1,15 +1,18 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(testDir, "..");
-const skillRoot = resolve(packageRoot, "skills/finance-analysis");
-const skillFile = resolve(skillRoot, "SKILL.md");
-const scriptFile = resolve(skillRoot, "scripts/run-workflow.mjs");
-const referencesFile = resolve(skillRoot, "references/tool-contracts.md");
+const skillsRoot = resolve(packageRoot, "skills");
 const packageJsonFile = resolve(packageRoot, "package.json");
+
+const expectedSkills = [
+	{ dir: "finance-analysis", name: "finance-analysis" },
+	{ dir: "finance-investment-advisor", name: "finance-investment-advisor" },
+	{ dir: "finance-portfolio-advisor", name: "finance-portfolio-advisor" },
+];
 
 function parseFrontmatter(markdown: string): Record<string, string> {
 	const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -33,18 +36,27 @@ function parseFrontmatter(markdown: string): Record<string, string> {
 }
 
 describe("finance skill package wiring", () => {
-	test("skill frontmatter contains required name and description", () => {
-		expect(existsSync(skillFile)).toBe(true);
-		const content = readFileSync(skillFile, "utf-8");
-		const frontmatter = parseFrontmatter(content);
+	test("all expected skills have frontmatter, scripts, and references", () => {
+		for (const skill of expectedSkills) {
+			const skillRoot = resolve(skillsRoot, skill.dir);
+			const skillFile = resolve(skillRoot, "SKILL.md");
+			const scriptsRoot = resolve(skillRoot, "scripts");
+			const referencesFile = resolve(skillRoot, "references/tool-contracts.md");
 
-		expect(frontmatter.name).toBe("finance-analysis");
-		expect((frontmatter.description ?? "").length).toBeGreaterThan(0);
-	});
+			expect(existsSync(skillFile)).toBe(true);
+			const content = readFileSync(skillFile, "utf-8");
+			const frontmatter = parseFrontmatter(content);
+			expect(frontmatter.name).toBe(skill.name);
+			expect((frontmatter.description ?? "").length).toBeGreaterThan(0);
 
-	test("skill script and references exist", () => {
-		expect(existsSync(scriptFile)).toBe(true);
-		expect(existsSync(referencesFile)).toBe(true);
+			expect(existsSync(referencesFile)).toBe(true);
+			expect(existsSync(scriptsRoot)).toBe(true);
+			const scripts = readdirSync(scriptsRoot).filter((entry) => {
+				const path = resolve(scriptsRoot, entry);
+				return statSync(path).isFile() && entry.endsWith(".mjs");
+			});
+			expect(scripts.length).toBeGreaterThan(0);
+		}
 	});
 
 	test("package.json declares pi.skills entry", () => {

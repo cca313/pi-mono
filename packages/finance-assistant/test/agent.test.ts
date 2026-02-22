@@ -24,12 +24,20 @@ describe("finance agent defaults", () => {
 		expect(model.id).toBe("deepseek-chat");
 	});
 
-	test("creates toolset with required three tools", () => {
+	test("creates toolset with expected finance advisory tools", () => {
 		const tools = createFinanceToolset();
 		expect(tools.map((tool) => tool.name)).toEqual([
 			"finance_fetch_market_data",
 			"finance_compute_indicators",
 			"finance_generate_report",
+			"finance_capture_investor_profile",
+			"finance_capture_portfolio_snapshot",
+			"finance_fetch_fundamentals",
+			"finance_assess_investment_suitability",
+			"finance_plan_position_strategy",
+			"finance_review_portfolio",
+			"finance_run_portfolio_stress_test",
+			"finance_generate_rebalance_plan",
 		]);
 	});
 
@@ -39,10 +47,21 @@ describe("finance agent defaults", () => {
 			"finance_fetch_market_data",
 			"finance_compute_indicators",
 			"finance_generate_report",
+			"finance_capture_investor_profile",
+			"finance_capture_portfolio_snapshot",
+			"finance_fetch_fundamentals",
+			"finance_assess_investment_suitability",
+			"finance_plan_position_strategy",
+			"finance_review_portfolio",
+			"finance_run_portfolio_stress_test",
+			"finance_generate_rebalance_plan",
 		]);
 		expect(agent.state.systemPrompt).toContain(
 			"finance_fetch_market_data -> finance_compute_indicators -> finance_generate_report",
 		);
+		expect(agent.state.systemPrompt).toContain("finance-analysis");
+		expect(agent.state.systemPrompt).toContain("finance-investment-advisor");
+		expect(agent.state.systemPrompt).toContain("finance-portfolio-advisor");
 		expect(agent.state.model.provider).toBe("deepseek");
 		expect(agent.state.model.id).toBe("deepseek-chat");
 	});
