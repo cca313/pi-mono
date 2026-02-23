@@ -43,6 +43,16 @@ Advisory chain (single-symbol + portfolio):
 10. `finance_run_portfolio_stress_test`
 11. `finance_generate_rebalance_plan`
 
+Advisor operations + onboarding:
+
+12. `finance_capture_client_goals`
+13. `finance_build_investment_policy_statement`
+14. `finance_monitor_portfolio_drift`
+15. `finance_monitor_risk_budget` (built-in risk tiers: conservative / moderate / aggressive)
+16. `finance_generate_client_review_packet`
+17. `finance_log_advisory_decision`
+18. `finance_generate_advisory_summary`
+
 ## Coverage / Placeholder Semantics
 
 Advisory outputs include:
@@ -74,6 +84,8 @@ Current limitation (intentional for framework-first rollout):
 - `skills/finance-analysis/SKILL.md`
 - `skills/finance-investment-advisor/SKILL.md`
 - `skills/finance-portfolio-advisor/SKILL.md`
+- `skills/finance-client-onboarding/SKILL.md`
+- `skills/finance-advisory-operations/SKILL.md`
 
 Script mode examples:
 
@@ -81,6 +93,8 @@ Script mode examples:
 node skills/finance-analysis/scripts/run-workflow.mjs --symbol AAPL --timeframe 1D --limit 200
 node skills/finance-investment-advisor/scripts/run-investment-advisor-workflow.mjs --symbol AAPL --timeframe 1D --limit 200
 node skills/finance-portfolio-advisor/scripts/run-portfolio-advisor-workflow.mjs
+node skills/finance-client-onboarding/scripts/run-client-onboarding-workflow.mjs
+node skills/finance-advisory-operations/scripts/run-advisory-operations-workflow.mjs
 ```
 
 ## Public API
@@ -92,6 +106,9 @@ Key exports include:
 - `runFinanceWorkflow(input)`
 - `runInvestmentAdvisorWorkflow(input)`
 - `runPortfolioAdvisorWorkflow(input)`
+- `runClientOnboardingWorkflow(input)`
+- `runAdvisoryOperationsWorkflow(input)`
+- `buildAdvisorySummary(input)`
 - `resolveFinanceModel(provider?, modelId?)`
 - advisory pure functions/types via `src/advisory/*`
 - `getFinanceSkillDescriptor()` (backward compatible, returns `finance-analysis`)
@@ -131,6 +148,14 @@ Portfolio advisory:
 4. `finance_run_portfolio_stress_test`
 5. `finance_generate_rebalance_plan`
 
+Advisory operations:
+
+1. `finance_monitor_portfolio_drift`
+2. `finance_monitor_risk_budget`
+3. `finance_generate_client_review_packet`
+4. `finance_log_advisory_decision`
+5. `finance_generate_advisory_summary`
+
 Always include risks, uncertainty, coverage, and the research-only disclaimer.
 
 ## Quick Start
@@ -148,11 +173,40 @@ npm run example:cli -w @mariozechner/pi-finance-assistant -- "Analyze AAPL on 1D
 npm run example:cli -w @mariozechner/pi-finance-assistant -- "As an investment advisor, assess AAPL for a moderate long-term investor and propose a position range"
 ```
 
+Deterministic workflow CLI (structured output + export):
+
+```bash
+npm run example:workflow -w @mariozechner/pi-finance-assistant -- --workflow onboarding --mode json --export bundle
+npm run example:workflow -w @mariozechner/pi-finance-assistant -- --workflow operations --mode ndjson --export bundle
+npm run example:workflow -w @mariozechner/pi-finance-assistant -- --workflow operations --mode json --output ./finance-summary.json
+```
+
+Supported deterministic flags:
+
+- `--workflow agent|onboarding|operations|symbol-advice`
+- `--mode text|json|ndjson`
+- `--export none|bundle`
+- `--report none|compliance` with `--reportFormat json|markdown`
+- `--output <path>`
+- `--profileJson <json>` / `--goalsJson <json>` / `--portfolioJson <json>` / `--riskTier conservative|moderate|aggressive`
+- `--riskTemplateJson <json>` to override built-in threshold templates at runtime
+
+Risk template notes:
+
+- Built-in template registry defaults are exported from `src/advisory/risk-template-registry.ts`.
+- Static baseline template file: `config/risk-templates/default.json`.
+- `finance_monitor_risk_budget` supports template overrides and returns `templateId/templateVersion` in `riskMonitor`.
+- `buildAdvisorySummary` surfaces template metadata in `summary.monitoring.riskTemplateId/riskTemplateVersion`.
+
 Troubleshooting:
 
 - `PROVIDERS_FAILED`: quote providers unavailable (check network/API keys).
 - `FUNDAMENTALS_PROVIDERS_FAILED`: fundamentals providers unavailable and placeholder fallback disabled.
 - `coverage="placeholder"`: expected when fundamentals support is not implemented or unavailable.
+
+Productization runbook:
+
+- `docs/finance-productization.md`
 
 Run isolated web demo:
 

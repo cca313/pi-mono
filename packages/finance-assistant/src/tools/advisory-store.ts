@@ -1,9 +1,21 @@
 import { randomUUID } from "node:crypto";
 import type {
 	AdvisoryCoverage,
+	AdvisoryDecisionLog,
+	AdvisoryDecisionLogEnvelope,
+	AdvisorySummary,
+	AdvisorySummaryEnvelope,
+	ClientGoals,
+	ClientGoalsEnvelope,
+	ClientReviewPacket,
+	ClientReviewPacketEnvelope,
 	FundamentalsSnapshotEnvelope,
+	InvestmentPolicyStatement,
+	InvestmentPolicyStatementEnvelope,
 	InvestorProfile,
 	InvestorProfileEnvelope,
+	PortfolioDriftReport,
+	PortfolioDriftReportEnvelope,
 	PortfolioReview,
 	PortfolioReviewEnvelope,
 	PortfolioSnapshot,
@@ -14,6 +26,8 @@ import type {
 	PositionStrategyPlanEnvelope,
 	RebalancePlan,
 	RebalancePlanEnvelope,
+	RiskBudgetMonitor,
+	RiskBudgetMonitorEnvelope,
 	SuitabilityAssessmentEnvelope,
 	SuitabilitySummary,
 } from "../advisory/types.js";
@@ -27,7 +41,14 @@ type AdvisoryArtifactKind =
 	| "position-plan"
 	| "portfolio-review"
 	| "stress-test"
-	| "rebalance-plan";
+	| "rebalance-plan"
+	| "goals"
+	| "ips"
+	| "drift-report"
+	| "risk-monitor"
+	| "review-packet"
+	| "decision-log"
+	| "advisory-summary";
 
 type AdvisoryArtifactValue =
 	| InvestorProfileEnvelope
@@ -37,7 +58,14 @@ type AdvisoryArtifactValue =
 	| PositionStrategyPlanEnvelope
 	| PortfolioReviewEnvelope
 	| PortfolioStressTestEnvelope
-	| RebalancePlanEnvelope;
+	| RebalancePlanEnvelope
+	| ClientGoalsEnvelope
+	| InvestmentPolicyStatementEnvelope
+	| PortfolioDriftReportEnvelope
+	| RiskBudgetMonitorEnvelope
+	| ClientReviewPacketEnvelope
+	| AdvisoryDecisionLogEnvelope
+	| AdvisorySummaryEnvelope;
 
 interface AdvisoryArtifactRecord {
 	kind: AdvisoryArtifactKind;
@@ -101,6 +129,47 @@ export interface FinanceAdvisoryStore {
 	}): RebalancePlanEnvelope;
 	getRebalancePlan(rebalancePlanId: string): RebalancePlanEnvelope | undefined;
 	getRebalancePlanOrThrow(rebalancePlanId: string): RebalancePlanEnvelope;
+	saveGoals(goals: ClientGoals, coverage?: AdvisoryCoverage, warnings?: string[]): ClientGoalsEnvelope;
+	getGoals(goalsId: string): ClientGoalsEnvelope | undefined;
+	getGoalsOrThrow(goalsId: string): ClientGoalsEnvelope;
+	saveIps(
+		ips: InvestmentPolicyStatement,
+		coverage?: AdvisoryCoverage,
+		warnings?: string[],
+	): InvestmentPolicyStatementEnvelope;
+	getIps(ipsId: string): InvestmentPolicyStatementEnvelope | undefined;
+	getIpsOrThrow(ipsId: string): InvestmentPolicyStatementEnvelope;
+	saveDriftReport(
+		report: PortfolioDriftReport,
+		coverage?: AdvisoryCoverage,
+		warnings?: string[],
+	): PortfolioDriftReportEnvelope;
+	getDriftReport(driftReportId: string): PortfolioDriftReportEnvelope | undefined;
+	getDriftReportOrThrow(driftReportId: string): PortfolioDriftReportEnvelope;
+	saveRiskMonitor(
+		riskMonitor: RiskBudgetMonitor,
+		coverage?: AdvisoryCoverage,
+		warnings?: string[],
+	): RiskBudgetMonitorEnvelope;
+	getRiskMonitor(riskMonitorId: string): RiskBudgetMonitorEnvelope | undefined;
+	getRiskMonitorOrThrow(riskMonitorId: string): RiskBudgetMonitorEnvelope;
+	saveReviewPacket(
+		reviewPacket: ClientReviewPacket,
+		coverage?: AdvisoryCoverage,
+		warnings?: string[],
+	): ClientReviewPacketEnvelope;
+	getReviewPacket(reviewPacketId: string): ClientReviewPacketEnvelope | undefined;
+	getReviewPacketOrThrow(reviewPacketId: string): ClientReviewPacketEnvelope;
+	saveDecisionLog(
+		decisionLog: AdvisoryDecisionLog,
+		coverage?: AdvisoryCoverage,
+		warnings?: string[],
+	): AdvisoryDecisionLogEnvelope;
+	getDecisionLog(decisionLogId: string): AdvisoryDecisionLogEnvelope | undefined;
+	getDecisionLogOrThrow(decisionLogId: string): AdvisoryDecisionLogEnvelope;
+	saveSummary(summary: AdvisorySummary, coverage?: AdvisoryCoverage, warnings?: string[]): AdvisorySummaryEnvelope;
+	getSummary(summaryId: string): AdvisorySummaryEnvelope | undefined;
+	getSummaryOrThrow(summaryId: string): AdvisorySummaryEnvelope;
 }
 
 function normalizeMaxEntries(input: number | undefined): number {
@@ -122,6 +191,14 @@ function buildMissingStateError(kind: AdvisoryArtifactKind, id: string): Finance
 
 	if (kind === "fundamentals") {
 		return new FinanceAssistantError("FUNDAMENTALS_STATE_NOT_FOUND", `Fundamentals state not found: ${id}`);
+	}
+
+	if (kind === "goals") {
+		return new FinanceAssistantError("ADVISORY_GOALS_NOT_FOUND", `Client goals not found: ${id}`);
+	}
+
+	if (kind === "ips") {
+		return new FinanceAssistantError("ADVISORY_IPS_NOT_FOUND", `IPS not found: ${id}`);
 	}
 
 	return new FinanceAssistantError("WORKFLOW_STATE_NOT_FOUND", `Advisory state not found (${kind}): ${id}`);
@@ -317,6 +394,125 @@ export function createFinanceAdvisoryStore(maxEntries?: number): FinanceAdvisory
 		},
 		getRebalancePlanOrThrow(rebalancePlanId) {
 			return getTypedOrThrow<RebalancePlanEnvelope>("rebalance-plan", rebalancePlanId);
+		},
+		saveGoals(goals, coverage = "full", warnings = []) {
+			const envelope: ClientGoalsEnvelope = {
+				goalsId: randomUUID(),
+				goals,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "goals", id: envelope.goalsId, value: envelope });
+			return envelope;
+		},
+		getGoals(goalsId) {
+			return getTyped<ClientGoalsEnvelope>("goals", goalsId);
+		},
+		getGoalsOrThrow(goalsId) {
+			return getTypedOrThrow<ClientGoalsEnvelope>("goals", goalsId);
+		},
+		saveIps(ips, coverage = "full", warnings = []) {
+			const envelope: InvestmentPolicyStatementEnvelope = {
+				ipsId: randomUUID(),
+				ips,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "ips", id: envelope.ipsId, value: envelope });
+			return envelope;
+		},
+		getIps(ipsId) {
+			return getTyped<InvestmentPolicyStatementEnvelope>("ips", ipsId);
+		},
+		getIpsOrThrow(ipsId) {
+			return getTypedOrThrow<InvestmentPolicyStatementEnvelope>("ips", ipsId);
+		},
+		saveDriftReport(report, coverage = "full", warnings = []) {
+			const envelope: PortfolioDriftReportEnvelope = {
+				driftReportId: randomUUID(),
+				driftReport: report,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "drift-report", id: envelope.driftReportId, value: envelope });
+			return envelope;
+		},
+		getDriftReport(driftReportId) {
+			return getTyped<PortfolioDriftReportEnvelope>("drift-report", driftReportId);
+		},
+		getDriftReportOrThrow(driftReportId) {
+			return getTypedOrThrow<PortfolioDriftReportEnvelope>("drift-report", driftReportId);
+		},
+		saveRiskMonitor(riskMonitor, coverage = "full", warnings = []) {
+			const envelope: RiskBudgetMonitorEnvelope = {
+				riskMonitorId: randomUUID(),
+				riskMonitor,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "risk-monitor", id: envelope.riskMonitorId, value: envelope });
+			return envelope;
+		},
+		getRiskMonitor(riskMonitorId) {
+			return getTyped<RiskBudgetMonitorEnvelope>("risk-monitor", riskMonitorId);
+		},
+		getRiskMonitorOrThrow(riskMonitorId) {
+			return getTypedOrThrow<RiskBudgetMonitorEnvelope>("risk-monitor", riskMonitorId);
+		},
+		saveReviewPacket(reviewPacket, coverage = "full", warnings = []) {
+			const envelope: ClientReviewPacketEnvelope = {
+				reviewPacketId: randomUUID(),
+				reviewPacket,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "review-packet", id: envelope.reviewPacketId, value: envelope });
+			return envelope;
+		},
+		getReviewPacket(reviewPacketId) {
+			return getTyped<ClientReviewPacketEnvelope>("review-packet", reviewPacketId);
+		},
+		getReviewPacketOrThrow(reviewPacketId) {
+			return getTypedOrThrow<ClientReviewPacketEnvelope>("review-packet", reviewPacketId);
+		},
+		saveDecisionLog(decisionLog, coverage = "full", warnings = []) {
+			const envelope: AdvisoryDecisionLogEnvelope = {
+				decisionLogId: randomUUID(),
+				decisionLog,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "decision-log", id: envelope.decisionLogId, value: envelope });
+			return envelope;
+		},
+		getDecisionLog(decisionLogId) {
+			return getTyped<AdvisoryDecisionLogEnvelope>("decision-log", decisionLogId);
+		},
+		getDecisionLogOrThrow(decisionLogId) {
+			return getTypedOrThrow<AdvisoryDecisionLogEnvelope>("decision-log", decisionLogId);
+		},
+		saveSummary(summary, coverage = "full", warnings = []) {
+			const envelope: AdvisorySummaryEnvelope = {
+				summaryId: randomUUID(),
+				summary,
+				coverage,
+				warnings: [...warnings],
+				updatedAt: stamp(Date.now()),
+			};
+			touch({ kind: "advisory-summary", id: envelope.summaryId, value: envelope });
+			return envelope;
+		},
+		getSummary(summaryId) {
+			return getTyped<AdvisorySummaryEnvelope>("advisory-summary", summaryId);
+		},
+		getSummaryOrThrow(summaryId) {
+			return getTypedOrThrow<AdvisorySummaryEnvelope>("advisory-summary", summaryId);
 		},
 	};
 }

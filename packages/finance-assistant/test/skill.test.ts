@@ -12,6 +12,8 @@ const expectedSkills = [
 	{ dir: "finance-analysis", name: "finance-analysis" },
 	{ dir: "finance-investment-advisor", name: "finance-investment-advisor" },
 	{ dir: "finance-portfolio-advisor", name: "finance-portfolio-advisor" },
+	{ dir: "finance-client-onboarding", name: "finance-client-onboarding" },
+	{ dir: "finance-advisory-operations", name: "finance-advisory-operations" },
 ];
 
 function parseFrontmatter(markdown: string): Record<string, string> {

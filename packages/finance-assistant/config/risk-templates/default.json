@@ -1,0 +1,34 @@
+{
+	"templateId": "default-core",
+	"version": "2026-02-23",
+	"tiers": {
+		"conservative": {
+			"maxSinglePositionPct": 12,
+			"maxSectorPct": 25,
+			"maxVolatilityAnnualized": 0.28,
+			"maxDrawdownPct": 15,
+			"minCashPct": 8,
+			"maxCashPct": 30,
+			"maxStressLossPct": 12
+		},
+		"moderate": {
+			"maxSinglePositionPct": 18,
+			"maxSectorPct": 35,
+			"maxVolatilityAnnualized": 0.45,
+			"maxDrawdownPct": 22,
+			"minCashPct": 4,
+			"maxCashPct": 20,
+			"maxStressLossPct": 20
+		},
+		"aggressive": {
+			"maxSinglePositionPct": 25,
+			"maxSectorPct": 45,
+			"maxVolatilityAnnualized": 0.65,
+			"maxDrawdownPct": 32,
+			"minCashPct": 2,
+			"maxCashPct": 15,
+			"maxStressLossPct": 30
+		}
+	},
+	"notes": "Built-in baseline thresholds for conservative/moderate/aggressive monitoring."
+}

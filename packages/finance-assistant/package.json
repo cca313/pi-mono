@@ -5,7 +5,7 @@
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"files": ["dist", "skills", "README.md"],
+	"files": ["dist", "skills", "config", "README.md"],
 	"pi": {
 		"skills": ["./skills"]
 	},
@@ -14,6 +14,7 @@
 		"build": "tsgo -p tsconfig.build.json",
 		"dev": "tsgo -p tsconfig.build.json --watch --preserveWatchOutput",
 		"example:cli": "tsx examples/cli-finance.ts",
+		"example:workflow": "tsx examples/cli-finance-workflow.ts",
 		"test": "vitest --run",
 		"prepublishOnly": "npm run clean && npm run build"
 	},

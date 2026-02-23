@@ -1,5 +1,6 @@
 import { Agent, type ThinkingLevel } from "@mariozechner/pi-agent-core";
 import { type Api, getModel, getModels, getProviders, type KnownProvider, type Model } from "@mariozechner/pi-ai";
+import type { RiskThresholdTemplate } from "./advisory/types.js";
 import type { FinanceDataProvider } from "./providers/types.js";
 import { createFinanceToolset } from "./tools/index.js";
 import type { Timeframe } from "./types.js";
@@ -44,6 +45,7 @@ export interface CreateFinanceAgentOptions {
 	defaultLimit?: number;
 	maxCachedWorkflows?: number;
 	maxCachedAdvisoryArtifacts?: number;
+	defaultRiskTemplate?: RiskThresholdTemplate;
 }
 
 export function createFinanceAgent(options?: CreateFinanceAgentOptions): Agent {
@@ -54,6 +56,7 @@ export function createFinanceAgent(options?: CreateFinanceAgentOptions): Agent {
 		defaultLimit: options?.defaultLimit,
 		maxCachedWorkflows: options?.maxCachedWorkflows,
 		maxCachedAdvisoryArtifacts: options?.maxCachedAdvisoryArtifacts,
+		defaultRiskTemplate: options?.defaultRiskTemplate,
 	});
 
 	return new Agent({
@@ -62,13 +65,19 @@ export function createFinanceAgent(options?: CreateFinanceAgentOptions): Agent {
 				options?.systemPrompt ??
 				"You are a financial analysis and investment advisory assistant. " +
 					"Prefer these skills by request type: finance-analysis (technical analysis), " +
-					"finance-investment-advisor (single-symbol advisory), finance-portfolio-advisor (portfolio review). " +
+					"finance-investment-advisor (single-symbol advisory), finance-portfolio-advisor (portfolio review), " +
+					"finance-client-onboarding (profile/goals/IPS), finance-advisory-operations (monitoring/review/logging). " +
 					"If skills are unavailable, use tool chains in order. " +
 					"Analysis chain: finance_fetch_market_data -> finance_compute_indicators -> finance_generate_report. " +
 					"Single-symbol advisory chain extends analysis with: finance_fetch_fundamentals -> " +
-					"finance_capture_investor_profile -> finance_assess_investment_suitability -> finance_plan_position_strategy. " +
+					"finance_capture_investor_profile -> finance_capture_client_goals -> " +
+					"finance_build_investment_policy_statement -> finance_assess_investment_suitability -> " +
+					"finance_plan_position_strategy. " +
 					"Portfolio advisory chain: finance_capture_investor_profile -> finance_capture_portfolio_snapshot -> " +
 					"finance_review_portfolio -> finance_run_portfolio_stress_test -> finance_generate_rebalance_plan. " +
+					"Operations chain: finance_monitor_portfolio_drift -> finance_monitor_risk_budget -> " +
+					"finance_generate_client_review_packet -> finance_log_advisory_decision -> " +
+					"finance_generate_advisory_summary. " +
 					"Always include key risks, uncertainty, coverage level, and a not-investment-advice disclaimer.",
 			model,
 			thinkingLevel: options?.thinkingLevel ?? "off",

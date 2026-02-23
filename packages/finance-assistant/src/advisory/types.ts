@@ -310,6 +310,261 @@ export interface RebalancePlanEnvelope {
 	updatedAt: number;
 }
 
+export type RiskProfileTier = "conservative" | "moderate" | "aggressive";
+
+export interface FinancialGoal {
+	goalId?: string;
+	label: string;
+	targetAmount?: number;
+	currentAmount?: number;
+	targetDate?: number;
+	priority?: "high" | "medium" | "low";
+	notes?: string;
+}
+
+export interface CashFlowPlan {
+	monthlyContribution?: number;
+	monthlyWithdrawal?: number;
+	emergencyFundMonths?: number;
+}
+
+export interface ClientGoals {
+	planningHorizonYears?: number;
+	targetReturnRangePct?: RangePct;
+	maxLossTolerancePct?: number;
+	liquidityBufferPct?: number;
+	goals: FinancialGoal[];
+	cashFlowPlan?: CashFlowPlan;
+	restrictions?: InvestorRestriction[];
+	notes?: string;
+}
+
+export interface ClientGoalsEnvelope {
+	goalsId: string;
+	goals: ClientGoals;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
+export interface InvestmentPolicyStatement {
+	riskProfileTier: RiskProfileTier;
+	investmentHorizon: InvestmentHorizon;
+	objectives: InvestmentObjective[];
+	targetReturnRangePct: RangePct;
+	maxAcceptableDrawdownPct: number;
+	cashTargetRangePct: RangePct;
+	singlePositionMaxPct: number;
+	sectorMaxPct: number;
+	rebalanceFrequency: "monthly" | "quarterly" | "semi-annual";
+	reviewCadence: "monthly" | "quarterly";
+	tradingRules: string[];
+	constraints: string[];
+	assumptions: string[];
+	disclaimer: string;
+}
+
+export interface InvestmentPolicyStatementEnvelope {
+	ipsId: string;
+	ips: InvestmentPolicyStatement;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
+export type DriftBreachKind = "position" | "cash";
+
+export interface DriftBreach {
+	kind: DriftBreachKind;
+	symbol?: string;
+	currentWeightPct: number;
+	targetMinPct: number;
+	targetMaxPct: number;
+	driftPct: number;
+	severity: "high" | "medium" | "low";
+	reason: string;
+}
+
+export interface DriftPriorityItem {
+	kind: DriftBreachKind;
+	symbol?: string;
+	severity: "high" | "medium" | "low";
+	action: "trim" | "add" | "adjust-cash";
+	estimatedDriftPct: number;
+	reason: string;
+}
+
+export interface PortfolioDriftReport {
+	summary: string;
+	breaches: DriftBreach[];
+	priorityQueue: DriftPriorityItem[];
+	coverageNotes: string[];
+}
+
+export interface PortfolioDriftReportEnvelope {
+	driftReportId: string;
+	driftReport: PortfolioDriftReport;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
+export type RiskSeverity = "info" | "warning" | "critical";
+
+export interface RiskBudgetThresholds {
+	maxSinglePositionPct: number;
+	maxSectorPct: number;
+	maxVolatilityAnnualized: number;
+	maxDrawdownPct: number;
+	minCashPct: number;
+	maxCashPct: number;
+	maxStressLossPct: number;
+}
+
+export interface RiskThresholdTemplate {
+	templateId: string;
+	version: string;
+	tiers: Record<RiskProfileTier, RiskBudgetThresholds>;
+	notes?: string;
+}
+
+export interface RiskFlag {
+	code: string;
+	severity: RiskSeverity;
+	message: string;
+	metric?: number;
+	threshold?: number;
+}
+
+export interface RiskBudgetMonitor {
+	riskTier: RiskProfileTier;
+	thresholds: RiskBudgetThresholds;
+	templateId: string;
+	templateVersion: string;
+	flags: RiskFlag[];
+	overallSeverity: RiskSeverity;
+	summary: string;
+}
+
+export interface RiskBudgetMonitorEnvelope {
+	riskMonitorId: string;
+	riskMonitor: RiskBudgetMonitor;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
+export interface ClientReviewPacket {
+	headline: string;
+	keyUpdates: string[];
+	riskAlerts: string[];
+	recommendedActions: string[];
+	clientQuestions: string[];
+	disclaimer: string;
+}
+
+export interface ClientReviewPacketEnvelope {
+	reviewPacketId: string;
+	reviewPacket: ClientReviewPacket;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
+export interface AdvisoryDecisionLog {
+	decisionSummary: string;
+	recommendation: string;
+	evidence: string[];
+	constraints: string[];
+	relatedArtifactIds: string[];
+	disclaimer: string;
+	loggedAt: number;
+}
+
+export interface AdvisoryDecisionLogEnvelope {
+	decisionLogId: string;
+	decisionLog: AdvisoryDecisionLog;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
+export interface AdvisorySummary {
+	generatedAt: number;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	audit?: AdvisoryAuditEnvelope;
+	client: {
+		clientLabel?: string;
+		riskTier?: RiskProfileTier;
+		investmentHorizon?: InvestmentHorizon;
+		goalLabels: string[];
+	};
+	policy?: {
+		targetReturnRangePct: RangePct;
+		maxAcceptableDrawdownPct: number;
+		cashTargetRangePct: RangePct;
+		singlePositionMaxPct: number;
+		sectorMaxPct: number;
+		rebalanceFrequency: InvestmentPolicyStatement["rebalanceFrequency"];
+	};
+	monitoring: {
+		riskSeverity?: RiskSeverity;
+		riskFlagCount: number;
+		riskTemplateId?: string;
+		riskTemplateVersion?: string;
+		driftBreachCount: number;
+		worstStressScenario?: string;
+		worstStressLossPct?: number;
+	};
+	actions: {
+		priorityActions: string[];
+		clientActions: string[];
+	};
+	compliance: {
+		disclaimer: string;
+		decisionLogId?: string;
+		evidenceSummary: string[];
+	};
+}
+
+export interface AdvisoryAuditEnvelope {
+	runId: string;
+	workflow: "agent" | "onboarding" | "operations" | "symbol-advice";
+	generatedAt: number;
+	coverage: AdvisoryCoverage;
+	warningsCount: number;
+	templateId?: string;
+	templateVersion?: string;
+	artifactIds: string[];
+}
+
+export interface AdvisorySummaryInput {
+	profile?: InvestorProfile | InvestorProfileEnvelope;
+	goals?: ClientGoals | ClientGoalsEnvelope;
+	ips?: InvestmentPolicyStatement | InvestmentPolicyStatementEnvelope;
+	portfolioReview?: PortfolioReview | PortfolioReviewEnvelope;
+	stressTest?: PortfolioStressTest | PortfolioStressTestEnvelope;
+	rebalancePlan?: RebalancePlan | RebalancePlanEnvelope;
+	driftReport?: PortfolioDriftReport | PortfolioDriftReportEnvelope;
+	riskMonitor?: RiskBudgetMonitor | RiskBudgetMonitorEnvelope;
+	reviewPacket?: ClientReviewPacket | ClientReviewPacketEnvelope;
+	decisionLog?: AdvisoryDecisionLog | AdvisoryDecisionLogEnvelope;
+	audit?: {
+		runId?: string;
+		workflow?: "agent" | "onboarding" | "operations" | "symbol-advice";
+		artifactIds?: string[];
+	};
+}
+
+export interface AdvisorySummaryEnvelope {
+	summaryId: string;
+	summary: AdvisorySummary;
+	coverage: AdvisoryCoverage;
+	warnings: string[];
+	updatedAt: number;
+}
+
 export interface AdvisoryAnalysisContext {
 	analysisId: string;
 	market: FinanceMarketData;

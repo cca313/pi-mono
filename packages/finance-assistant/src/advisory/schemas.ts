@@ -172,3 +172,57 @@ export const rebalanceConstraintsSchema = Type.Object({
 	noSellSymbols: Type.Optional(Type.Array(Type.String())),
 	allowTaxableSales: Type.Optional(Type.Boolean()),
 });
+
+export const riskProfileTierSchema = riskToleranceSchema;
+
+export const financialGoalSchema = Type.Object({
+	goalId: Type.Optional(Type.String()),
+	label: Type.String(),
+	targetAmount: Type.Optional(Type.Number({ minimum: 0 })),
+	currentAmount: Type.Optional(Type.Number({ minimum: 0 })),
+	targetDate: Type.Optional(Type.Number()),
+	priority: Type.Optional(Type.Union([Type.Literal("high"), Type.Literal("medium"), Type.Literal("low")])),
+	notes: Type.Optional(Type.String()),
+});
+
+export const cashFlowPlanSchema = Type.Object({
+	monthlyContribution: Type.Optional(Type.Number({ minimum: 0 })),
+	monthlyWithdrawal: Type.Optional(Type.Number({ minimum: 0 })),
+	emergencyFundMonths: Type.Optional(Type.Number({ minimum: 0 })),
+});
+
+export const clientGoalsSchema = Type.Object({
+	planningHorizonYears: Type.Optional(Type.Number({ minimum: 1, maximum: 80 })),
+	targetReturnRangePct: Type.Optional(rangePctSchema),
+	maxLossTolerancePct: Type.Optional(Type.Number({ minimum: 0, maximum: 100 })),
+	liquidityBufferPct: Type.Optional(Type.Number({ minimum: 0, maximum: 100 })),
+	goals: Type.Array(financialGoalSchema, { minItems: 1 }),
+	cashFlowPlan: Type.Optional(cashFlowPlanSchema),
+	restrictions: Type.Optional(Type.Array(investorRestrictionSchema)),
+	notes: Type.Optional(Type.String()),
+});
+
+export const driftBreachKindSchema = Type.Union([Type.Literal("position"), Type.Literal("cash")]);
+
+export const riskSeveritySchema = Type.Union([Type.Literal("info"), Type.Literal("warning"), Type.Literal("critical")]);
+
+export const riskBudgetThresholdsSchema = Type.Object({
+	maxSinglePositionPct: Type.Number({ minimum: 0, maximum: 100 }),
+	maxSectorPct: Type.Number({ minimum: 0, maximum: 100 }),
+	maxVolatilityAnnualized: Type.Number({ minimum: 0 }),
+	maxDrawdownPct: Type.Number({ minimum: 0, maximum: 100 }),
+	minCashPct: Type.Number({ minimum: 0, maximum: 100 }),
+	maxCashPct: Type.Number({ minimum: 0, maximum: 100 }),
+	maxStressLossPct: Type.Number({ minimum: 0, maximum: 100 }),
+});
+
+export const riskThresholdTemplateSchema = Type.Object({
+	templateId: Type.String(),
+	version: Type.String(),
+	tiers: Type.Object({
+		conservative: riskBudgetThresholdsSchema,
+		moderate: riskBudgetThresholdsSchema,
+		aggressive: riskBudgetThresholdsSchema,
+	}),
+	notes: Type.Optional(Type.String()),
+});

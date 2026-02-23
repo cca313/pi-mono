@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { FinanceDataProvider } from "../src/providers/types.js";
+import { runAdvisoryOperationsWorkflow } from "../src/workflow/run-advisory-operations-workflow.js";
+import { runClientOnboardingWorkflow } from "../src/workflow/run-client-onboarding-workflow.js";
 import { runInvestmentAdvisorWorkflow } from "../src/workflow/run-investment-advisor-workflow.js";
 import { runPortfolioAdvisorWorkflow } from "../src/workflow/run-portfolio-advisor-workflow.js";
 
@@ -132,5 +134,71 @@ describe("advisory workflow wrappers", () => {
 		expect(result.portfolioReview.portfolioReview.summary.length).toBeGreaterThan(0);
 		expect(result.stressTest.stressTest.scenarioResults.length).toBeGreaterThan(0);
 		expect(result.rebalancePlan.rebalancePlan.executionConditions.length).toBeGreaterThan(0);
+	});
+
+	test("runClientOnboardingWorkflow returns profile/goals/ips envelopes", async () => {
+		const result = await runClientOnboardingWorkflow({
+			profile: {
+				clientLabel: "Onboarding Wrapper",
+				riskTolerance: "conservative",
+				investmentHorizon: "long",
+				objectives: ["capital-preservation", "income"],
+				liquidityNeeds: "medium",
+			},
+			goals: {
+				planningHorizonYears: 8,
+				goals: [{ label: "College Fund", targetAmount: 250000, priority: "high" }],
+				liquidityBufferPct: 10,
+			},
+		});
+
+		expect(result.profile.profileId.length).toBeGreaterThan(0);
+		expect(result.goals.goalsId.length).toBeGreaterThan(0);
+		expect(result.ips.ipsId.length).toBeGreaterThan(0);
+		expect(result.ips.ips.riskProfileTier).toBe("conservative");
+		expect(result.summary.client.goalLabels).toContain("College Fund");
+		expect(result.summary.policy?.maxAcceptableDrawdownPct).toBeGreaterThan(0);
+		expect(result.summary.audit?.workflow).toBe("onboarding");
+		expect(result.summary.audit?.artifactIds.length).toBeGreaterThanOrEqual(3);
+	});
+
+	test("runAdvisoryOperationsWorkflow returns monitoring, packet, and decision log", async () => {
+		const result = await runAdvisoryOperationsWorkflow({
+			profile: {
+				clientLabel: "Operations Wrapper",
+				riskTolerance: "moderate",
+				investmentHorizon: "long",
+				objectives: ["growth", "diversification"],
+				liquidityNeeds: "medium",
+			},
+			portfolio: {
+				asOf: Date.now(),
+				baseCurrency: "USD",
+				accounts: [
+					{
+						accountId: "tax-1",
+						accountType: "taxable",
+						cashBalance: 2000,
+						positions: [
+							{ symbol: "AAPL", quantity: 40, lastPrice: 190, marketValue: 7600, sector: "Technology" },
+							{ symbol: "MSFT", quantity: 20, lastPrice: 410, marketValue: 8200, sector: "Technology" },
+						],
+					},
+				],
+			},
+			targetPolicy: { singlePositionMaxPct: 12, cashTargetRangePct: { min: 5, max: 15 } },
+		});
+
+		expect(result.driftReport.driftReportId.length).toBeGreaterThan(0);
+		expect(result.riskMonitor.riskMonitorId.length).toBeGreaterThan(0);
+		expect(result.reviewPacket.reviewPacketId.length).toBeGreaterThan(0);
+		expect(result.decisionLog.decisionLogId.length).toBeGreaterThan(0);
+		expect(result.riskMonitor.riskMonitor.riskTier).toBe("moderate");
+		expect(result.summary.monitoring.driftBreachCount).toBeGreaterThanOrEqual(0);
+		expect(result.summary.compliance.decisionLogId).toBe(result.decisionLog.decisionLogId);
+		expect(result.decisionLog.decisionLog.relatedArtifactIds.length).toBeGreaterThanOrEqual(6);
+		expect(result.summary.compliance.evidenceSummary.length).toBeGreaterThan(0);
+		expect(result.summary.audit?.workflow).toBe("operations");
+		expect(result.summary.audit?.artifactIds.length).toBeGreaterThanOrEqual(7);
 	});
 });

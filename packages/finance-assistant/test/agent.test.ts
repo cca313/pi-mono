@@ -33,11 +33,18 @@ describe("finance agent defaults", () => {
 			"finance_capture_investor_profile",
 			"finance_capture_portfolio_snapshot",
 			"finance_fetch_fundamentals",
+			"finance_capture_client_goals",
+			"finance_build_investment_policy_statement",
 			"finance_assess_investment_suitability",
 			"finance_plan_position_strategy",
 			"finance_review_portfolio",
 			"finance_run_portfolio_stress_test",
 			"finance_generate_rebalance_plan",
+			"finance_monitor_portfolio_drift",
+			"finance_monitor_risk_budget",
+			"finance_generate_client_review_packet",
+			"finance_log_advisory_decision",
+			"finance_generate_advisory_summary",
 		]);
 	});
 
@@ -50,11 +57,18 @@ describe("finance agent defaults", () => {
 			"finance_capture_investor_profile",
 			"finance_capture_portfolio_snapshot",
 			"finance_fetch_fundamentals",
+			"finance_capture_client_goals",
+			"finance_build_investment_policy_statement",
 			"finance_assess_investment_suitability",
 			"finance_plan_position_strategy",
 			"finance_review_portfolio",
 			"finance_run_portfolio_stress_test",
 			"finance_generate_rebalance_plan",
+			"finance_monitor_portfolio_drift",
+			"finance_monitor_risk_budget",
+			"finance_generate_client_review_packet",
+			"finance_log_advisory_decision",
+			"finance_generate_advisory_summary",
 		]);
 		expect(agent.state.systemPrompt).toContain(
 			"finance_fetch_market_data -> finance_compute_indicators -> finance_generate_report",
@@ -62,6 +76,9 @@ describe("finance agent defaults", () => {
 		expect(agent.state.systemPrompt).toContain("finance-analysis");
 		expect(agent.state.systemPrompt).toContain("finance-investment-advisor");
 		expect(agent.state.systemPrompt).toContain("finance-portfolio-advisor");
+		expect(agent.state.systemPrompt).toContain("finance-client-onboarding");
+		expect(agent.state.systemPrompt).toContain("finance-advisory-operations");
+		expect(agent.state.systemPrompt).toContain("finance_generate_advisory_summary");
 		expect(agent.state.model.provider).toBe("deepseek");
 		expect(agent.state.model.id).toBe("deepseek-chat");
 	});

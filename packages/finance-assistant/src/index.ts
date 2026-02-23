@@ -1,5 +1,6 @@
 export * from "./advisory/index.js";
 export * from "./agent.js";
+export * from "./cli/workflow-cli.js";
 export * from "./errors.js";
 export * from "./indicators/index.js";
 export * from "./providers/index.js";
@@ -8,6 +9,8 @@ export * from "./skill.js";
 export * from "./tools/index.js";
 export * from "./types.js";
 export * from "./workflow/compute-finance-indicators.js";
+export * from "./workflow/run-advisory-operations-workflow.js";
+export * from "./workflow/run-client-onboarding-workflow.js";
 export * from "./workflow/run-finance-workflow.js";
 export * from "./workflow/run-investment-advisor-workflow.js";
 export * from "./workflow/run-portfolio-advisor-workflow.js";

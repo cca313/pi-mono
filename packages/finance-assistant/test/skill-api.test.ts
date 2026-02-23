@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
+	FINANCE_ADVISORY_OPERATIONS_SKILL_NAME,
 	FINANCE_ANALYSIS_SKILL_NAME,
+	FINANCE_CLIENT_ONBOARDING_SKILL_NAME,
 	FINANCE_INVESTMENT_ADVISOR_SKILL_NAME,
 	FINANCE_PORTFOLIO_ADVISOR_SKILL_NAME,
 	getFinanceSkillDescriptor,
@@ -14,6 +16,8 @@ describe("finance skill descriptor API", () => {
 			FINANCE_ANALYSIS_SKILL_NAME,
 			FINANCE_INVESTMENT_ADVISOR_SKILL_NAME,
 			FINANCE_PORTFOLIO_ADVISOR_SKILL_NAME,
+			FINANCE_CLIENT_ONBOARDING_SKILL_NAME,
+			FINANCE_ADVISORY_OPERATIONS_SKILL_NAME,
 		]);
 		expect(skills.every((skill) => skill.relativePath.endsWith("SKILL.md"))).toBe(true);
 	});

@@ -13,6 +13,16 @@ export const FINANCE_PORTFOLIO_ADVISOR_SKILL_RELATIVE_PATH = "skills/finance-por
 export const FINANCE_PORTFOLIO_ADVISOR_SKILL_DESCRIPTION =
 	"Portfolio review workflow with stress testing and rebalance planning.";
 
+export const FINANCE_CLIENT_ONBOARDING_SKILL_NAME = "finance-client-onboarding";
+export const FINANCE_CLIENT_ONBOARDING_SKILL_RELATIVE_PATH = "skills/finance-client-onboarding/SKILL.md";
+export const FINANCE_CLIENT_ONBOARDING_SKILL_DESCRIPTION =
+	"Client onboarding workflow with profile capture, goals capture, and IPS generation.";
+
+export const FINANCE_ADVISORY_OPERATIONS_SKILL_NAME = "finance-advisory-operations";
+export const FINANCE_ADVISORY_OPERATIONS_SKILL_RELATIVE_PATH = "skills/finance-advisory-operations/SKILL.md";
+export const FINANCE_ADVISORY_OPERATIONS_SKILL_DESCRIPTION =
+	"Ongoing advisory operations workflow for drift/risk monitoring, client review packets, decision logging, and summary publishing.";
+
 // Backward-compatible aliases for existing callers.
 export const FINANCE_SKILL_NAME = FINANCE_ANALYSIS_SKILL_NAME;
 export const FINANCE_SKILL_RELATIVE_PATH = FINANCE_ANALYSIS_SKILL_RELATIVE_PATH;
@@ -40,6 +50,16 @@ export function getFinanceSkillDescriptors(): FinanceSkillDescriptor[] {
 			name: FINANCE_PORTFOLIO_ADVISOR_SKILL_NAME,
 			relativePath: FINANCE_PORTFOLIO_ADVISOR_SKILL_RELATIVE_PATH,
 			description: FINANCE_PORTFOLIO_ADVISOR_SKILL_DESCRIPTION,
+		},
+		{
+			name: FINANCE_CLIENT_ONBOARDING_SKILL_NAME,
+			relativePath: FINANCE_CLIENT_ONBOARDING_SKILL_RELATIVE_PATH,
+			description: FINANCE_CLIENT_ONBOARDING_SKILL_DESCRIPTION,
+		},
+		{
+			name: FINANCE_ADVISORY_OPERATIONS_SKILL_NAME,
+			relativePath: FINANCE_ADVISORY_OPERATIONS_SKILL_RELATIVE_PATH,
+			description: FINANCE_ADVISORY_OPERATIONS_SKILL_DESCRIPTION,
 		},
 	];
 }
