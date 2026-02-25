@@ -286,6 +286,41 @@ function collectAutoSkillEntries(dir: string, includeRootFiles = true): string[]
 	return collectSkillEntries(dir, includeRootFiles);
 }
 
+function findGitRepoRoot(startDir: string): string | null {
+	let dir = resolve(startDir);
+	while (true) {
+		if (existsSync(join(dir, ".git"))) {
+			return dir;
+		}
+		const parent = dirname(dir);
+		if (parent === dir) {
+			return null;
+		}
+		dir = parent;
+	}
+}
+
+function collectAncestorAgentsSkillDirs(startDir: string): string[] {
+	const skillDirs: string[] = [];
+	const resolvedStartDir = resolve(startDir);
+	const gitRepoRoot = findGitRepoRoot(resolvedStartDir);
+
+	let dir = resolvedStartDir;
+	while (true) {
+		skillDirs.push(join(dir, ".agents", "skills"));
+		if (gitRepoRoot && dir === gitRepoRoot) {
+			break;
+		}
+		const parent = dirname(dir);
+		if (parent === dir) {
+			break;
+		}
+		dir = parent;
+	}
+
+	return skillDirs;
+}
+
 function collectAutoPromptEntries(dir: string): string[] {
 	const entries: string[] = [];
 	if (!existsSync(dir)) return entries;
@@ -687,13 +722,13 @@ export class DefaultPackageManager implements PackageManager {
 		const globalSettings = this.settingsManager.getGlobalSettings();
 		const projectSettings = this.settingsManager.getProjectSettings();
 
-		// Collect all packages with scope
+		// Collect all packages with scope (project first so cwd resources win collisions)
 		const allPackages: Array<{ pkg: PackageSource; scope: SourceScope }> = [];
-		for (const pkg of globalSettings.packages ?? []) {
-			allPackages.push({ pkg, scope: "user" });
-		}
 		for (const pkg of projectSettings.packages ?? []) {
 			allPackages.push({ pkg, scope: "project" });
+		}
+		for (const pkg of globalSettings.packages ?? []) {
+			allPackages.push({ pkg, scope: "user" });
 		}
 
 		// Dedupe: project scope wins over global for same package identity
@@ -708,17 +743,6 @@ export class DefaultPackageManager implements PackageManager {
 			const globalEntries = (globalSettings[resourceType] ?? []) as string[];
 			const projectEntries = (projectSettings[resourceType] ?? []) as string[];
 			this.resolveLocalEntries(
-				globalEntries,
-				resourceType,
-				target,
-				{
-					source: "local",
-					scope: "user",
-					origin: "top-level",
-				},
-				globalBaseDir,
-			);
-			this.resolveLocalEntries(
 				projectEntries,
 				resourceType,
 				target,
@@ -728,6 +752,17 @@ export class DefaultPackageManager implements PackageManager {
 					origin: "top-level",
 				},
 				projectBaseDir,
+			);
+			this.resolveLocalEntries(
+				globalEntries,
+				resourceType,
+				target,
+				{
+					source: "local",
+					scope: "user",
+					origin: "top-level",
+				},
+				globalBaseDir,
 			);
 		}
 
@@ -1548,6 +1583,8 @@ export class DefaultPackageManager implements PackageManager {
 			prompts: join(projectBaseDir, "prompts"),
 			themes: join(projectBaseDir, "themes"),
 		};
+		const userAgentsSkillsDir = join(homedir(), ".agents", "skills");
+		const projectAgentsSkillDirs = collectAncestorAgentsSkillDirs(this.cwd);
 
 		const addResources = (
 			resourceType: ResourceType,
@@ -1565,35 +1602,6 @@ export class DefaultPackageManager implements PackageManager {
 
 		addResources(
 			"extensions",
-			collectAutoExtensionEntries(userDirs.extensions),
-			userMetadata,
-			userOverrides.extensions,
-			globalBaseDir,
-		);
-		addResources(
-			"skills",
-			collectAutoSkillEntries(userDirs.skills),
-			userMetadata,
-			userOverrides.skills,
-			globalBaseDir,
-		);
-		addResources(
-			"prompts",
-			collectAutoPromptEntries(userDirs.prompts),
-			userMetadata,
-			userOverrides.prompts,
-			globalBaseDir,
-		);
-		addResources(
-			"themes",
-			collectAutoThemeEntries(userDirs.themes),
-			userMetadata,
-			userOverrides.themes,
-			globalBaseDir,
-		);
-
-		addResources(
-			"extensions",
 			collectAutoExtensionEntries(projectDirs.extensions),
 			projectMetadata,
 			projectOverrides.extensions,
@@ -1601,7 +1609,10 @@ export class DefaultPackageManager implements PackageManager {
 		);
 		addResources(
 			"skills",
-			collectAutoSkillEntries(projectDirs.skills),
+			[
+				...collectAutoSkillEntries(projectDirs.skills),
+				...projectAgentsSkillDirs.flatMap((dir) => collectAutoSkillEntries(dir)),
+			],
 			projectMetadata,
 			projectOverrides.skills,
 			projectBaseDir,
@@ -1619,6 +1630,35 @@ export class DefaultPackageManager implements PackageManager {
 			projectMetadata,
 			projectOverrides.themes,
 			projectBaseDir,
+		);
+
+		addResources(
+			"extensions",
+			collectAutoExtensionEntries(userDirs.extensions),
+			userMetadata,
+			userOverrides.extensions,
+			globalBaseDir,
+		);
+		addResources(
+			"skills",
+			[...collectAutoSkillEntries(userDirs.skills), ...collectAutoSkillEntries(userAgentsSkillsDir)],
+			userMetadata,
+			userOverrides.skills,
+			globalBaseDir,
+		);
+		addResources(
+			"prompts",
+			collectAutoPromptEntries(userDirs.prompts),
+			userMetadata,
+			userOverrides.prompts,
+			globalBaseDir,
+		);
+		addResources(
+			"themes",
+			collectAutoThemeEntries(userDirs.themes),
+			userMetadata,
+			userOverrides.themes,
+			globalBaseDir,
 		);
 	}
 

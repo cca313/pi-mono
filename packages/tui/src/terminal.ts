@@ -3,16 +3,6 @@ import { createRequire } from "node:module";
 import { setKittyProtocolActive } from "./keys.js";
 import { StdinBuffer } from "./stdin-buffer.js";
 
-type NativeKoffiFunction = (...args: unknown[]) => unknown;
-
-interface KoffiLibrary {
-	func(signature: string): NativeKoffiFunction;
-}
-
-interface KoffiModule {
-	load(libraryName: string): KoffiLibrary;
-}
-
 const require = createRequire(import.meta.url);
 
 /**
@@ -186,7 +176,10 @@ export class ProcessTerminal implements Terminal {
 	private enableWindowsVTInput(): void {
 		if (process.platform !== "win32") return;
 		try {
-			const koffi = require("koffi") as KoffiModule;
+			// Dynamic require to avoid bundling koffi's 74MB of cross-platform
+			// native binaries into every compiled binary. Koffi is only needed
+			// on Windows for VT input support.
+			const koffi = require("koffi");
 			const k32 = koffi.load("kernel32.dll");
 			const GetStdHandle = k32.func("void* __stdcall GetStdHandle(int)");
 			const GetConsoleMode = k32.func("bool __stdcall GetConsoleMode(void*, _Out_ uint32_t*)");
